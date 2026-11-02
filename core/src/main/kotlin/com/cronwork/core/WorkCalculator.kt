@@ -45,4 +45,53 @@ object WorkCalculator {
             crossesMidnight = crossesMidnight,
         )
     }
+
+    fun weekStart(date: LocalDate): LocalDate = date.minusDays((date.dayOfWeek.value - 1).toLong())
+
+    /** Week from Monday to Sunday. Days after today do not count towards the balance. */
+    fun weekSummary(
+        weekStart: LocalDate,
+        sessions: List<Session>,
+        adjustments: List<Adjustment>,
+        specials: List<SpecialDay>,
+        settings: Settings,
+        now: Instant,
+        zone: ZoneId,
+    ): WeekSummary {
+        val today = now.atZone(zone).toLocalDate()
+        val specialsByDate = specials.associateBy { it.date }
+        val days = (0L until 7L).map { offset ->
+            val date = weekStart.plusDays(offset)
+            daySummary(date, sessions, adjustments, specialsByDate[date], settings, now, zone)
+        }
+        return WeekSummary(
+            weekStart = weekStart,
+            days = days,
+            workedSeconds = days.sumOf { it.workedSeconds },
+            targetSeconds = days.sumOf { it.targetSeconds },
+            balanceSeconds = days.filter { !it.date.isAfter(today) }.sumOf { it.balanceSeconds },
+        )
+    }
+
+    /** Hour bank: sum of daily balances from the first day with data up to today. */
+    fun totalBalanceSeconds(
+        sessions: List<Session>,
+        adjustments: List<Adjustment>,
+        specials: List<SpecialDay>,
+        settings: Settings,
+        now: Instant,
+        zone: ZoneId,
+    ): Long {
+        val today = now.atZone(zone).toLocalDate()
+        val first = (sessions.map { it.start.atZone(zone).toLocalDate() } + adjustments.map { it.date })
+            .minOrNull() ?: return 0
+        val specialsByDate = specials.associateBy { it.date }
+        var total = 0L
+        var date = first
+        while (!date.isAfter(today)) {
+            total += daySummary(date, sessions, adjustments, specialsByDate[date], settings, now, zone).balanceSeconds
+            date = date.plusDays(1)
+        }
+        return total
+    }
 }

@@ -37,3 +37,12 @@ data class DaySummary(
     val balanceSeconds: Long get() = workedSeconds - targetSeconds
     val remainingSeconds: Long get() = targetSeconds - workedSeconds
 }
+
+data class WeekSummary(
+    val weekStart: LocalDate,
+    /** Seven days, Monday to Sunday. */
+    val days: List<DaySummary>,
+    val workedSeconds: Long,
+    val targetSeconds: Long,
+    val balanceSeconds: Long,
+)
