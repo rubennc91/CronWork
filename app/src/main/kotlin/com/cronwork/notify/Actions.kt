@@ -9,6 +9,7 @@ import com.cronwork.MainActivity
 object Actions {
     const val STOP = "com.cronwork.action.STOP"
     const val TOGGLE = "com.cronwork.action.TOGGLE"
+    const val START = "com.cronwork.action.START"
     const val STILL_WORKING = "com.cronwork.action.STILL_WORKING"
     const val END_OF_DAY = "com.cronwork.action.END_OF_DAY"
     const val FORGOT_CHECK = "com.cronwork.action.FORGOT_CHECK"

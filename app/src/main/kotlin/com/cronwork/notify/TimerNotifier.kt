@@ -55,9 +55,12 @@ class TimerNotifier(private val context: Context) : TimerSideEffects {
             return
         }
         if (!canNotify()) return
-        val remaining = state.today.remainingSeconds
+        val remaining = state.secondsToTarget
+        val fromEarlierDay = state.openSessionFromEarlierDay
         // "when" is the moment the day's target is reached; the system chronometer counts towards/away from it.
-        val targetAt = System.currentTimeMillis() + remaining * 1000
+        // A session left running from an earlier day adds nothing to today, so it just counts up from its start.
+        val whenMillis = if (fromEarlierDay) state.runningSince!!.toEpochMilli() else System.currentTimeMillis() + remaining * 1000
+        val countDown = !fromEarlierDay && remaining > 0
         val builder = NotificationCompat.Builder(context, CHANNEL_TIMER)
             .setSmallIcon(R.drawable.ic_stat_timer)
             .setOngoing(true)
@@ -67,12 +70,18 @@ class TimerNotifier(private val context: Context) : TimerSideEffects {
             .setContentIntent(Actions.openApp(context))
             .addAction(0, "Parar", Actions.broadcast(context, Actions.STOP, 1))
             .setShowWhen(true)
-            .setWhen(targetAt)
+            .setWhen(whenMillis)
             .setUsesChronometer(true)
-            .setChronometerCountDown(remaining > 0)
-            .setContentTitle(if (remaining > 0) "Trabajando · queda para la jornada" else "Jornada cumplida · tiempo extra")
+            .setChronometerCountDown(countDown)
+            .setContentTitle(
+                when {
+                    fromEarlierDay -> "En marcha desde otro día"
+                    remaining > 0 -> "Trabajando · queda para la jornada"
+                    else -> "Jornada cumplida · tiempo extra"
+                },
+            )
             .setContentText(
-                if (state.openSessionFromEarlierDay) "Sigue en marcha desde otro día. ¿Olvidaste pararlo?"
+                if (fromEarlierDay) "¿Olvidaste pararlo? Toca para corregirlo."
                 else "Semana ${formatSigned(state.weekBalanceSeconds)} · Bolsa ${formatSigned(state.totalBalanceSeconds)}",
             )
         nm.notify(ID_TIMER, builder.build())

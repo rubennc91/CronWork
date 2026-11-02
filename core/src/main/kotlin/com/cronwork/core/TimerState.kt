@@ -12,6 +12,8 @@ data class TimerState(
     val totalBalanceSeconds: Long,
     /** The open session started on an earlier day (forgot to stop?). Its time counts for that day. */
     val openSessionFromEarlierDay: Boolean,
+    /** Real working seconds until today's target is reached, paid pause included; negative once exceeded. */
+    val secondsToTarget: Long,
 ) {
     companion object {
         fun compute(
@@ -27,13 +29,15 @@ data class TimerState(
             val week = WorkCalculator.weekSummary(
                 WorkCalculator.weekStart(today), sessions, adjustments, specials, settings, now, zone,
             )
+            val todaySummary = week.days.first { it.date == today }
             return TimerState(
                 running = open != null,
                 runningSince = open?.start,
-                today = week.days.first { it.date == today },
+                today = todaySummary,
                 weekBalanceSeconds = week.balanceSeconds,
                 totalBalanceSeconds = WorkCalculator.totalBalanceSeconds(sessions, adjustments, specials, settings, now, zone),
                 openSessionFromEarlierDay = open != null && open.start.atZone(zone).toLocalDate() != today,
+                secondsToTarget = WorkCalculator.secondsToTarget(todaySummary, settings),
             )
         }
     }

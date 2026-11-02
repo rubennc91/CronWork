@@ -24,6 +24,7 @@ class TimerActionReceiver : BroadcastReceiver() {
                         c.notifier.cancelEndOfDay()
                     }
                     Actions.TOGGLE -> c.timer.toggle()
+                    Actions.START -> c.timer.start()
                     Actions.STILL_WORKING -> {
                         val st = c.timer.compute(c.timer.snapshot())
                         st.runningSince?.let { since ->
@@ -34,7 +35,7 @@ class TimerActionReceiver : BroadcastReceiver() {
                     }
                     Actions.END_OF_DAY -> {
                         val st = c.timer.compute(c.timer.snapshot())
-                        if (st.running && st.today.remainingSeconds <= 60) c.notifier.showEndOfDay()
+                        if (st.running && st.secondsToTarget <= 60) c.notifier.showEndOfDay()
                         c.timer.refresh()
                     }
                     Actions.FORGOT_CHECK -> {

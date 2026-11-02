@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.cronwork.core.EditError
 import com.cronwork.core.Session
+import com.cronwork.core.WorkCalculator
 import com.cronwork.core.parseHm
 import com.cronwork.ui.timeFormat
 import java.time.LocalDate
@@ -77,8 +78,8 @@ fun SessionEditDialog(
                     end.isNotBlank() && (endMin == null || endMin > 24 * 60) -> error = "Hora de fin no válida"
                     end.isBlank() && !isOpen -> error = "Indica la hora de fin"
                     else -> {
-                        val startInstant = startDate.atStartOfDay(zone).plusMinutes(startMin.toLong()).toInstant()
-                        val endInstant = endMin?.let { startDate.atStartOfDay(zone).plusMinutes(it.toLong()).toInstant() }
+                        val startInstant = WorkCalculator.instantAt(startDate, startMin, zone)
+                        val endInstant = endMin?.let { WorkCalculator.instantAt(startDate, it, zone) }
                         val edited = Session(session?.id ?: 0, startInstant, endInstant)
                         launch {
                             val result = onSave(edited)

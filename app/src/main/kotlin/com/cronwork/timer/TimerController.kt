@@ -77,7 +77,10 @@ class TimerController(
         WorkSnapshot(repo.allSessions(), repo.allAdjustments(), repo.allSpecials(), settingsRepo.current())
 
     suspend fun toggle() {
-        if (repo.openSession() == null) start() else stop()
+        mutex.withLock {
+            if (repo.openSession() == null) repo.startSession(now()) else repo.stopOpenSession(now())
+        }
+        refresh()
     }
 
     suspend fun start() {

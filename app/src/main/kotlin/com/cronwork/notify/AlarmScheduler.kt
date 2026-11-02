@@ -22,7 +22,7 @@ class AlarmScheduler(private val context: Context) : TimerSideEffects {
 
     override suspend fun sync(state: TimerState, settings: Settings) {
         val now = System.currentTimeMillis()
-        val remaining = state.today.remainingSeconds
+        val remaining = state.secondsToTarget
         if (state.running && !state.openSessionFromEarlierDay && remaining > 0) {
             set(now + remaining * 1000, endOfDayIntent())
         } else {

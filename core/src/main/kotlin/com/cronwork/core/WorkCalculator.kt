@@ -7,6 +7,25 @@ import java.time.ZoneId
 
 object WorkCalculator {
 
+    /** Wall-clock time ([minutes] after midnight) on [date], correct on DST change days. */
+    fun instantAt(date: LocalDate, minutes: Int, zone: ZoneId): Instant =
+        date.atTime(minutes / 60 % 24, minutes % 60).atZone(zone).toInstant()
+            .let { if (minutes >= 24 * 60) date.plusDays(1).atStartOfDay(zone).toInstant() else it }
+
+    /**
+     * Real working seconds until the day's target is reached (negative once exceeded).
+     * Unlike [DaySummary.remainingSeconds] it accounts for a paid pause that will be added
+     * when the threshold is crossed.
+     */
+    fun secondsToTarget(summary: DaySummary, settings: Settings): Long {
+        if (summary.remainingSeconds <= 0 || summary.pauseApplied || !settings.pauseEnabled) return summary.remainingSeconds
+        val raw = summary.workedSeconds
+        val goal = summary.targetSeconds
+        val threshold = settings.pauseThresholdMinutes * 60L
+        val neededRaw = if (goal <= threshold) goal else maxOf(threshold, goal - settings.pauseMinutes * 60L)
+        return neededRaw - raw
+    }
+
     fun targetMinutes(date: LocalDate, special: SpecialDay?, settings: Settings): Int = when {
         special != null -> special.targetMinutes
         date.dayOfWeek in settings.workDays -> settings.dailyTargetMinutes
