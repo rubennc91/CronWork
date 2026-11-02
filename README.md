@@ -15,6 +15,7 @@ las 37,5 h semanales.
 - **Notificación** con la cuenta atrás y botón Parar mientras el contador está en marcha.
 - **Avisos** al terminar la jornada y si el contador lleva demasiadas horas seguidas.
 - **Widget** 2×1 para la pantalla de inicio con el tiempo restante y botón Iniciar/Parar.
+- **Botón rápido** en el panel de ajustes rápidos para iniciar/parar sin abrir la app.
 
 Los datos se guardan solo en el móvil.
 
@@ -27,6 +28,8 @@ Los datos se guardan solo en el móvil.
    (el navegador o la app de Archivos): acéptalo.
 4. Al abrir CronWork, permite las notificaciones.
 5. Para el widget: mantén pulsado el fondo de la pantalla de inicio → Widgets → CronWork.
+6. Para el botón rápido: despliega el panel de ajustes rápidos → lápiz (editar) → arrastra
+   "CronWork" a los botones activos.
 
 Para actualizar, descarga el APK más reciente e instálalo encima: se conservan los datos.
 

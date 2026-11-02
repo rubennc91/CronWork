@@ -7,6 +7,7 @@ import com.cronwork.data.SettingsRepository
 import com.cronwork.data.WorkRepository
 import com.cronwork.notify.AlarmScheduler
 import com.cronwork.notify.TimerNotifier
+import com.cronwork.tile.TileUpdater
 import com.cronwork.timer.TimerController
 import com.cronwork.widget.WidgetUpdater
 
@@ -30,11 +31,13 @@ class AppContainer(val app: Application) {
     val notifier = TimerNotifier(app)
     val alarms = AlarmScheduler(app)
     val widget = WidgetUpdater(app)
+    val tile = TileUpdater(app)
 
     init {
         timer.addSideEffects(notifier)
         timer.addSideEffects(alarms)
         timer.addSideEffects(widget)
+        timer.addSideEffects(tile)
     }
 }
 

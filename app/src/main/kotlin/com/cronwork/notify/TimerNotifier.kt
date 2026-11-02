@@ -51,7 +51,10 @@ class TimerNotifier(private val context: Context) : TimerSideEffects {
     @SuppressLint("MissingPermission")
     override suspend fun sync(state: TimerState, settings: Settings) {
         if (!state.running) {
+            // Stopped from anywhere (app, widget, notification, tile): clear every timer notification.
             nm.cancel(ID_TIMER)
+            nm.cancel(ID_END_OF_DAY)
+            nm.cancel(ID_FORGOT)
             return
         }
         if (!canNotify()) return
