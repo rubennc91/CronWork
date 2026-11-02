@@ -4,12 +4,7 @@ buildscript {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
     }
     dependencies {
         classpath(libs.gradle.kotlin)
