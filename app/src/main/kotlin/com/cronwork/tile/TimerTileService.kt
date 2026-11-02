@@ -42,15 +42,17 @@ class TimerTileService : TileService() {
     private fun show(state: TimerState) {
         val tile = qsTile ?: return
         tile.state = if (state.running) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-        tile.label = "CronWork"
+        // Some Android skins (OnePlus/OPPO) hide the subtitle, so the time goes in the label.
+        // It is refreshed each time the panel is opened.
+        val remaining = state.secondsToTarget
+        tile.label = when {
+            !state.running -> "CronWork"
+            state.openSessionFromEarlierDay -> "En marcha"
+            remaining > 0 -> "Quedan ${formatHm(remaining)}"
+            else -> "Extra ${formatHm(remaining)}"
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val remaining = state.secondsToTarget
-            tile.subtitle = when {
-                !state.running -> "Parado"
-                state.openSessionFromEarlierDay -> "En marcha"
-                remaining > 0 -> "Quedan ${formatHm(remaining)}"
-                else -> "Extra ${formatHm(remaining)}"
-            }
+            tile.subtitle = if (state.running) "CronWork" else "Parado"
         }
         tile.updateTile()
     }
