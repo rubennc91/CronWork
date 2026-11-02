@@ -136,10 +136,23 @@ class TimerController(
         refresh()
     }
 
-    /** Recomputes the state and pushes it to notification, alarms and widget. */
-    suspend fun refresh() {
+    private val refreshMutex = Mutex()
+
+    /**
+     * Recomputes the state and pushes it to notification, alarms and widget.
+     * Serialized so an older refresh can never overwrite a newer one, and one failing
+     * effect does not stop the others.
+     */
+    suspend fun refresh() = refreshMutex.withLock {
         val snap = snapshot()
         val st = compute(snap)
-        effects.forEach { it.sync(st, snap.settings) }
+        effects.forEach { effect ->
+            try {
+                effect.sync(st, snap.settings)
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                android.util.Log.e("CronWork", "Side effect ${effect::class.simpleName} failed", e)
+            }
+        }
     }
 }
