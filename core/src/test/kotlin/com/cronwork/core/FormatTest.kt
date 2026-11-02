@@ -26,3 +26,19 @@ class FormatTest {
         assertEquals("0:00", formatHm(59))
     }
 }
+
+class ParseTest {
+    @Test fun `parses hours and minutes`() {
+        assertEquals(450, parseHm("7:30"))
+        assertEquals(450, parseHm(" 07:30 "))
+        assertEquals(0, parseHm("0:00"))
+        assertEquals(600, parseHm("10"))
+    }
+
+    @Test fun `rejects invalid input`() {
+        assertEquals(null, parseHm("7:75"))
+        assertEquals(null, parseHm("abc"))
+        assertEquals(null, parseHm(""))
+        assertEquals(null, parseHm("-1:00"))
+    }
+}

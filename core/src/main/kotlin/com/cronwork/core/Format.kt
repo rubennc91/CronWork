@@ -24,3 +24,12 @@ fun formatSigned(seconds: Long): String {
         else -> "−$body"
     }
 }
+
+/** Parses "H:MM", "HH:MM" or "H" into minutes; null if invalid. */
+fun parseHm(text: String): Int? {
+    val m = Regex("""^(\d{1,2})(?::(\d{2}))?$""").matchEntire(text.trim()) ?: return null
+    val hours = m.groupValues[1].toInt()
+    val minutes = m.groupValues[2].ifEmpty { "0" }.toInt()
+    if (minutes > 59) return null
+    return hours * 60 + minutes
+}
