@@ -55,8 +55,7 @@ Usuario único, datos solo en el móvil, sin servidor ni cuenta.
   primer día con registros.
 - Tramo que cruza medianoche: pertenece entero al día en que empezó. Al detectarlo
   se muestra un aviso para revisarlo.
-- Un ajuste negativo nunca puede dejar el trabajado de un día por debajo de 0
-  (se limita y se avisa).
+- Un ajuste negativo puede dejar el trabajado de un día por debajo de 0 (se avisa). Sin este límite la cuenta atrás avanza siempre al mismo ritmo y la app, la notificación y el widget coinciden.
 
 ## Avisos y segundo plano
 

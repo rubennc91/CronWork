@@ -28,6 +28,9 @@ val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm", SPANISH
 
 fun String.capitalized(): String = replaceFirstChar { it.titlecase(SPANISH) }
 
+/** Worked time "H:MM", with "−" when negative adjustments leave the day below zero. */
+fun formatWorked(seconds: Long): String = (if (seconds / 60 < 0) "−" else "") + com.cronwork.core.formatHm(seconds)
+
 /** Green for positive balances, red for negative. */
 @Composable
 fun balanceColor(seconds: Long): Color = when {

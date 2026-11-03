@@ -76,7 +76,12 @@ fun DayEditor(
         }
 
         if (summary.crossesMidnight) Warning("Hay un tramo que pasa de medianoche: cuenta entero para este día. Revísalo si te olvidaste de parar.")
-        if (summary.adjustmentClamped) Warning("Los ajustes restan más de lo trabajado: el día cuenta como 0.")
+        if (summary.negativeWorked) {
+            Warning(
+                "Los ajustes restan más de lo trabajado (llevas ${com.cronwork.ui.formatWorked(summary.workedSeconds)}). " +
+                    "La cuenta atrás incluye ese tiempo hasta compensarlo. Si fue una prueba, borra el ajuste abajo.",
+            )
+        }
         if (summary.pauseApplied) Text("Incluye la pausa computable.", style = MaterialTheme.typography.bodySmall)
 
         Text("Tramos", style = MaterialTheme.typography.titleSmall)

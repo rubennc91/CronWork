@@ -38,13 +38,22 @@ class DaySummaryTest {
     @Test fun `adjustments add and subtract`() {
         val r = summary(MON, listOf(session(MON, 9, 0, 10)), listOf(adj(MON, 15), adj(MON, -5)))
         assertEquals(4200, r.workedSeconds)
-        assertFalse(r.adjustmentClamped)
+        assertFalse(r.negativeWorked)
     }
 
-    @Test fun `negative adjustment clamps to zero`() {
+    @Test fun `negative adjustments can leave the day below zero`() {
         val r = summary(MON, listOf(session(MON, 9, 0, 10)), listOf(adj(MON, -90)))
-        assertEquals(0, r.workedSeconds)
-        assertTrue(r.adjustmentClamped)
+        assertEquals(-1800, r.workedSeconds)
+        assertEquals(27000 + 1800L, r.remainingSeconds)
+        assertTrue(r.negativeWorked)
+    }
+
+    @Test fun `countdown keeps moving while adjustments exceed worked time`() {
+        // App, widget and notification must agree: every running second lowers the remaining time.
+        val open = Session(50, at(MON, 9), null)
+        val a = summary(MON, listOf(open), listOf(adj(MON, -90)), now = at(MON, 9, 10))
+        val b = summary(MON, listOf(open), listOf(adj(MON, -90)), now = at(MON, 9, 40))
+        assertEquals(30 * 60L, a.remainingSeconds - b.remainingSeconds)
     }
 
     @Test fun `pause applies at threshold`() {

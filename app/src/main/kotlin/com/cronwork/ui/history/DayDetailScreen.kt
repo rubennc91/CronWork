@@ -17,6 +17,7 @@ import com.cronwork.core.formatHm
 import com.cronwork.core.formatSigned
 import com.cronwork.timer.TimerController
 import com.cronwork.ui.balanceColor
+import com.cronwork.ui.formatWorked
 import com.cronwork.ui.capitalized
 import com.cronwork.ui.components.DayEditor
 import com.cronwork.ui.dayTitleFormat
@@ -32,7 +33,7 @@ fun DayDetailScreen(date: LocalDate, timer: TimerController, launch: (suspend ()
     )
     Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(date.format(dayTitleFormat).capitalized(), style = MaterialTheme.typography.titleLarge)
-        Text("Trabajado ${formatHm(summary.workedSeconds)} de ${formatHm(summary.targetSeconds)}")
+        Text("Trabajado ${formatWorked(summary.workedSeconds)} de ${formatHm(summary.targetSeconds)}")
         Text("Saldo ${formatSigned(summary.balanceSeconds)}", color = balanceColor(summary.balanceSeconds))
         DayEditor(date = date, summary = summary, snapshot = snap, timer = timer, launch = launch)
     }

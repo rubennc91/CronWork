@@ -50,9 +50,8 @@ object WorkCalculator {
             (s.end ?: now).atZone(zone).toLocalDate() != date
         }
         val adjustmentSeconds = adjustments.filter { it.date == date }.sumOf { it.minutes * 60L }
-        val raw = sessionSeconds + adjustmentSeconds
-        val clamped = raw < 0
-        var worked = raw.coerceAtLeast(0)
+        // Not clamped at 0: a linear total keeps the app, notification and widget countdowns in step.
+        var worked = sessionSeconds + adjustmentSeconds
         val pauseApplied = settings.pauseEnabled && worked >= settings.pauseThresholdMinutes * 60L
         if (pauseApplied) worked += settings.pauseMinutes * 60L
         return DaySummary(
@@ -60,7 +59,7 @@ object WorkCalculator {
             workedSeconds = worked,
             targetSeconds = targetMinutes(date, special, settings) * 60L,
             pauseApplied = pauseApplied,
-            adjustmentClamped = clamped,
+            negativeWorked = worked < 0,
             crossesMidnight = crossesMidnight,
         )
     }

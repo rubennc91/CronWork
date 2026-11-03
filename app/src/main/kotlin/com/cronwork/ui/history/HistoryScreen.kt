@@ -34,6 +34,7 @@ import com.cronwork.core.formatSigned
 import com.cronwork.timer.TimerController
 import com.cronwork.ui.SPANISH
 import com.cronwork.ui.balanceColor
+import com.cronwork.ui.formatWorked
 import com.cronwork.ui.capitalized
 import com.cronwork.ui.shortDayFormat
 import java.time.LocalDate
@@ -82,7 +83,7 @@ fun HistoryScreen(timer: TimerController, onOpenDay: (LocalDate) -> Unit) {
                             )
                             specials[d.date]?.let { Text(it.type.label(), style = MaterialTheme.typography.labelSmall) }
                         }
-                        Text("${formatHm(d.workedSeconds)} / ${formatHm(d.targetSeconds)}", Modifier.padding(end = 12.dp))
+                        Text("${formatWorked(d.workedSeconds)} / ${formatHm(d.targetSeconds)}", Modifier.padding(end = 12.dp))
                         Text(
                             if (future) "" else formatSigned(d.balanceSeconds),
                             color = balanceColor(d.balanceSeconds),
@@ -95,7 +96,7 @@ fun HistoryScreen(timer: TimerController, onOpenDay: (LocalDate) -> Unit) {
 
         Card {
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Trabajado: ${formatHm(week.workedSeconds)} de ${formatHm(week.targetSeconds)}")
+                Text("Trabajado: ${formatWorked(week.workedSeconds)} de ${formatHm(week.targetSeconds)}")
                 Row {
                     Text("Saldo de la semana: ")
                     Text(formatSigned(week.balanceSeconds), color = balanceColor(week.balanceSeconds), fontWeight = FontWeight.Bold)

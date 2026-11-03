@@ -31,7 +31,8 @@ data class DaySummary(
     val workedSeconds: Long,
     val targetSeconds: Long,
     val pauseApplied: Boolean,
-    val adjustmentClamped: Boolean,
+    /** Negative adjustments exceed the time worked: the day is below zero. */
+    val negativeWorked: Boolean,
     val crossesMidnight: Boolean,
 ) {
     val balanceSeconds: Long get() = workedSeconds - targetSeconds
