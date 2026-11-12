@@ -12,6 +12,18 @@ object WorkCalculator {
         date.atTime(minutes / 60 % 24, minutes % 60).atZone(zone).toInstant()
             .let { if (minutes >= 24 * 60) date.plusDays(1).atStartOfDay(zone).toInstant() else it }
 
+    /** A session typed as "HH:MM" times on [date] ends the next day when its end is before its start. */
+    fun endsNextDay(startMinutes: Int, endMinutes: Int?): Boolean = endMinutes != null && endMinutes < startMinutes
+
+    /** Start and end instants for times typed on [date]; an end before the start is on the next day. */
+    fun sessionInstants(date: LocalDate, startMinutes: Int, endMinutes: Int?, zone: ZoneId): Pair<Instant, Instant?> {
+        val start = instantAt(date, startMinutes, zone)
+        val end = endMinutes?.let {
+            instantAt(if (endsNextDay(startMinutes, it)) date.plusDays(1) else date, it, zone)
+        }
+        return start to end
+    }
+
     /**
      * Real working seconds until the day's target is reached (negative once exceeded).
      * Unlike [DaySummary.remainingSeconds] it accounts for a paid pause that will be added
