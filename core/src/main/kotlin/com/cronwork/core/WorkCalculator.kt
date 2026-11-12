@@ -12,6 +12,18 @@ object WorkCalculator {
         date.atTime(minutes / 60 % 24, minutes % 60).atZone(zone).toInstant()
             .let { if (minutes >= 24 * 60) date.plusDays(1).atStartOfDay(zone).toInstant() else it }
 
+    /** A session typed as "HH:MM" times on [date] ends the next day when its end is before its start. */
+    fun endsNextDay(startMinutes: Int, endMinutes: Int?): Boolean = endMinutes != null && endMinutes < startMinutes
+
+    /** Start and end instants for times typed on [date]; an end before the start is on the next day. */
+    fun sessionInstants(date: LocalDate, startMinutes: Int, endMinutes: Int?, zone: ZoneId): Pair<Instant, Instant?> {
+        val start = instantAt(date, startMinutes, zone)
+        val end = endMinutes?.let {
+            instantAt(if (endsNextDay(startMinutes, it)) date.plusDays(1) else date, it, zone)
+        }
+        return start to end
+    }
+
     /**
      * Real working seconds until the day's target is reached (negative once exceeded).
      * Unlike [DaySummary.remainingSeconds] it accounts for a paid pause that will be added
@@ -123,6 +135,28 @@ object WorkCalculator {
             targetSeconds = days.sumOf { it.targetSeconds },
             balanceSeconds = days.filter { !it.date.isAfter(today) }.sumOf { it.balanceSeconds },
         )
+    }
+
+    /** First day with a session or adjustment, or null when there is no data. */
+    fun firstDay(sessions: List<Session>, adjustments: List<Adjustment>, zone: ZoneId): LocalDate? =
+        DayIndex(sessions, adjustments, zone).firstDay()
+
+    /** Summaries for every day from [from] to [to] inclusive, grouping the history once. */
+    fun daySummaries(
+        from: LocalDate,
+        to: LocalDate,
+        sessions: List<Session>,
+        adjustments: List<Adjustment>,
+        specials: List<SpecialDay>,
+        settings: Settings,
+        now: Instant,
+        zone: ZoneId,
+    ): List<DaySummary> {
+        val index = DayIndex(sessions, adjustments, zone)
+        val specialsByDate = specials.associateBy { it.date }
+        return generateSequence(from) { it.plusDays(1) }.takeWhile { !it.isAfter(to) }
+            .map { summarize(it, index, specialsByDate[it], settings, now, zone) }
+            .toList()
     }
 
     /** Hour bank: sum of daily balances from the first day with data up to today. */

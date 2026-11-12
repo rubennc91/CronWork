@@ -9,7 +9,8 @@ las 37,5 h semanales.
 - **Hoy**: cuenta atrás grande, botón Iniciar/Parar, ajustes rápidos (±5, ±15, ±30 min
   u otra cantidad con nota) y lista de tramos editable.
 - **Histórico**: semana a semana, trabajado frente a objetivo, saldo de la semana y
-  bolsa acumulada. Toca un día para corregirlo.
+  bolsa acumulada. Toca un día para corregirlo. "Exportar CSV" comparte todo el histórico
+  en un archivo que Excel abre directamente.
 - **Ajustes**: horas por día, días laborables, pausa computable (desactivada por
   defecto), aviso de "¿sigues trabajando?" y festivos/vacaciones.
 - **Notificación** con la cuenta atrás y botón Parar mientras el contador está en marcha.

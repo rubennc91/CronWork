@@ -67,6 +67,11 @@ fun SessionEditDialog(
                     label = { Text(if (isOpen) "Fin (vacío = sigue en marcha)" else "Fin (HH:MM)") },
                     singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
+                val startTyped = parseHm(start)
+                val endTyped = if (end.isBlank()) null else parseHm(end)
+                if (startTyped != null && WorkCalculator.endsNextDay(startTyped, endTyped)) {
+                    Text("Termina al día siguiente. Cuenta para el día en que empezó.", style = MaterialTheme.typography.bodySmall)
+                }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         },
@@ -79,8 +84,7 @@ fun SessionEditDialog(
                     end.isNotBlank() && (endMin == null || endMin > 24 * 60) -> error = "Hora de fin no válida"
                     end.isBlank() && !isOpen -> error = "Indica la hora de fin"
                     else -> {
-                        val startInstant = WorkCalculator.instantAt(startDate, startMin, zone)
-                        val endInstant = endMin?.let { WorkCalculator.instantAt(startDate, it, zone) }
+                        val (startInstant, endInstant) = WorkCalculator.sessionInstants(startDate, startMin, endMin, zone)
                         val edited = Session(session?.id ?: 0, startInstant, endInstant)
                         launch {
                             val result = onSave(edited)

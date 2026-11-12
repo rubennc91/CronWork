@@ -48,3 +48,28 @@ class ReviewFixesTest {
         assertEquals(-10 * 60L, st(460, Settings()).secondsToTarget)
     }
 }
+
+class SessionTimesTest {
+    @Test fun `end after start stays on the same day`() {
+        val (start, end) = WorkCalculator.sessionInstants(MON, 9 * 60, 17 * 60, MADRID)
+        assertEquals(at(MON, 9), start)
+        assertEquals(at(MON, 17), end)
+    }
+
+    @Test fun `end before start finishes the next day`() {
+        val (start, end) = WorkCalculator.sessionInstants(MON, 22 * 60, 60, MADRID)
+        assertEquals(at(MON, 22), start)
+        assertEquals(at(MON.plusDays(1), 1), end)
+    }
+
+    @Test fun `open session has no end`() {
+        val (_, end) = WorkCalculator.sessionInstants(MON, 22 * 60, null, MADRID)
+        assertEquals(null, end)
+    }
+
+    @Test fun `next day end is detected`() {
+        assertEquals(true, WorkCalculator.endsNextDay(22 * 60, 60))
+        assertEquals(false, WorkCalculator.endsNextDay(9 * 60, 17 * 60))
+        assertEquals(false, WorkCalculator.endsNextDay(9 * 60, null))
+    }
+}
