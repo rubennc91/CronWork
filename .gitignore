@@ -33,3 +33,9 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Superpowers workspace
+.superpowers/
+
+# Signing key for this personal app is committed on purpose
+!app/release.keystore
