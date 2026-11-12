@@ -55,19 +55,13 @@ object CsvExporter {
                     signed(d.balanceSeconds),
                     tramos,
                     ajustes,
-                    specialsByDay[d.date]?.type?.let(::label) ?: "",
+                    specialsByDay[d.date]?.displayName() ?: "",
                 ).joinToString(";") { quote(it) }
             }
             val total = WorkCalculator.totalBalanceSeconds(sessions, adjustments, specials, settings, now, zone)
             rows += listOf("Bolsa total", "", "", "", "", signed(total), "", "", "").joinToString(";")
         }
         return "﻿" + rows.joinToString("\r\n") + "\r\n"
-    }
-
-    private fun label(t: SpecialDayType) = when (t) {
-        SpecialDayType.HOLIDAY -> "Festivo"
-        SpecialDayType.VACATION -> "Vacaciones"
-        SpecialDayType.OTHER -> "Especial"
     }
 
     private fun worked(seconds: Long) = (if (seconds / 60 < 0) "-" else "") + formatHm(seconds)
