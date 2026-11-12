@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.cronwork.core.SpecialDayType
 import com.cronwork.core.WorkCalculator
 import com.cronwork.core.formatHm
 import com.cronwork.core.formatSigned
@@ -44,11 +43,6 @@ import java.time.format.DateTimeFormatter
 
 private val weekTitle = DateTimeFormatter.ofPattern("d 'de' MMMM yyyy", SPANISH)
 
-fun SpecialDayType.label() = when (this) {
-    SpecialDayType.HOLIDAY -> "Festivo"
-    SpecialDayType.VACATION -> "Vacaciones"
-    SpecialDayType.OTHER -> "Especial"
-}
 
 @Composable
 fun HistoryScreen(timer: TimerController, launch: (suspend () -> Unit) -> Unit, onOpenDay: (LocalDate) -> Unit) {
@@ -84,7 +78,7 @@ fun HistoryScreen(timer: TimerController, launch: (suspend () -> Unit) -> Unit, 
                                 d.date.format(shortDayFormat).capitalized(),
                                 fontWeight = if (d.date == today) FontWeight.Bold else FontWeight.Normal,
                             )
-                            specials[d.date]?.let { Text(it.type.label(), style = MaterialTheme.typography.labelSmall) }
+                            specials[d.date]?.let { Text(it.displayName(), style = MaterialTheme.typography.labelSmall) }
                         }
                         Text("${formatWorked(d.workedSeconds)} / ${formatHm(d.targetSeconds)}", Modifier.padding(end = 12.dp))
                         Text(

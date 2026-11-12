@@ -38,14 +38,17 @@ data class SpecialDayEntity(
     @PrimaryKey val epochDay: Long,
     val type: String,
     val targetMinutes: Int,
+    /** Free-text reason ("Médico", "San Isidro"...). Added in database version 2. */
+    val note: String? = null,
 ) {
     fun toCore() = SpecialDay(
         LocalDate.ofEpochDay(epochDay),
         runCatching { SpecialDayType.valueOf(type) }.getOrDefault(SpecialDayType.OTHER),
         targetMinutes,
+        note,
     )
 
     companion object {
-        fun from(d: SpecialDay) = SpecialDayEntity(d.date.toEpochDay(), d.type.name, d.targetMinutes)
+        fun from(d: SpecialDay) = SpecialDayEntity(d.date.toEpochDay(), d.type.name, d.targetMinutes, d.note?.trim()?.ifEmpty { null })
     }
 }

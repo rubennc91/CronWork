@@ -41,7 +41,7 @@ import com.cronwork.core.parseHm
 import com.cronwork.timer.TimerController
 import com.cronwork.ui.SPANISH
 import com.cronwork.ui.capitalized
-import com.cronwork.ui.history.label
+import com.cronwork.core.label
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -63,7 +63,7 @@ fun SpecialDaysScreen(timer: TimerController, launch: (suspend () -> Unit) -> Un
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(d.date.format(dateFormat).capitalized())
-                    Text("${d.type.label()} · objetivo ${formatHm(d.targetMinutes * 60L)}", style = MaterialTheme.typography.bodySmall)
+                    Text("${d.displayName()} · objetivo ${formatHm(d.targetMinutes * 60L)}", style = MaterialTheme.typography.bodySmall)
                 }
                 IconButton(onClick = { launch { timer.deleteSpecialDay(d.date) } }) {
                     Icon(Icons.Filled.Delete, contentDescription = "Borrar")
@@ -81,6 +81,7 @@ private fun AddSpecialDayDialog(initial: LocalDate, onDismiss: () -> Unit, onSav
     var date by remember { mutableStateOf(initial) }
     var type by remember { mutableStateOf(SpecialDayType.HOLIDAY) }
     var target by remember { mutableStateOf("0:00") }
+    var note by remember { mutableStateOf("") }
     var picking by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -95,6 +96,11 @@ private fun AddSpecialDayDialog(initial: LocalDate, onDismiss: () -> Unit, onSav
                     }
                 }
                 OutlinedTextField(
+                    value = note, onValueChange = { note = it },
+                    label = { Text(if (type == SpecialDayType.OTHER) "Motivo (p. ej. médico)" else "Motivo (opcional)") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
                     value = target, onValueChange = { target = it }, label = { Text("Objetivo del día (H:MM)") },
                     isError = parseHm(target) == null, singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -103,7 +109,7 @@ private fun AddSpecialDayDialog(initial: LocalDate, onDismiss: () -> Unit, onSav
         },
         confirmButton = {
             TextButton(onClick = {
-                parseHm(target)?.let { onSave(SpecialDay(date, type, it)); onDismiss() }
+                parseHm(target)?.let { onSave(SpecialDay(date, type, it, note.trim().ifEmpty { null })); onDismiss() }
             }) { Text("Guardar") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },

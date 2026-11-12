@@ -12,8 +12,20 @@ data class Adjustment(val id: Long, val date: LocalDate, val minutes: Int, val n
 
 enum class SpecialDayType { HOLIDAY, VACATION, OTHER }
 
-/** A day whose target differs from the normal one (holiday, vacation...). */
-data class SpecialDay(val date: LocalDate, val type: SpecialDayType, val targetMinutes: Int)
+fun SpecialDayType.label(): String = when (this) {
+    SpecialDayType.HOLIDAY -> "Festivo"
+    SpecialDayType.VACATION -> "Vacaciones"
+    SpecialDayType.OTHER -> "Otro"
+}
+
+/** A day whose target differs from the normal one (holiday, vacation...), with an optional free-text reason. */
+data class SpecialDay(val date: LocalDate, val type: SpecialDayType, val targetMinutes: Int, val note: String? = null) {
+    /** "Festivo", "Festivo · San Isidro", or just the reason for "Otro" ("Médico"). */
+    fun displayName(): String {
+        val reason = note?.trim()?.takeIf { it.isNotEmpty() } ?: return type.label()
+        return if (type == SpecialDayType.OTHER) reason else "${type.label()} · $reason"
+    }
+}
 
 data class Settings(
     val dailyTargetMinutes: Int = 450,
