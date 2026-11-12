@@ -137,6 +137,28 @@ object WorkCalculator {
         )
     }
 
+    /** First day with a session or adjustment, or null when there is no data. */
+    fun firstDay(sessions: List<Session>, adjustments: List<Adjustment>, zone: ZoneId): LocalDate? =
+        DayIndex(sessions, adjustments, zone).firstDay()
+
+    /** Summaries for every day from [from] to [to] inclusive, grouping the history once. */
+    fun daySummaries(
+        from: LocalDate,
+        to: LocalDate,
+        sessions: List<Session>,
+        adjustments: List<Adjustment>,
+        specials: List<SpecialDay>,
+        settings: Settings,
+        now: Instant,
+        zone: ZoneId,
+    ): List<DaySummary> {
+        val index = DayIndex(sessions, adjustments, zone)
+        val specialsByDate = specials.associateBy { it.date }
+        return generateSequence(from) { it.plusDays(1) }.takeWhile { !it.isAfter(to) }
+            .map { summarize(it, index, specialsByDate[it], settings, now, zone) }
+            .toList()
+    }
+
     /** Hour bank: sum of daily balances from the first day with data up to today. */
     fun totalBalanceSeconds(
         sessions: List<Session>,

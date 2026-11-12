@@ -16,6 +16,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,7 +51,8 @@ fun SpecialDayType.label() = when (this) {
 }
 
 @Composable
-fun HistoryScreen(timer: TimerController, onOpenDay: (LocalDate) -> Unit) {
+fun HistoryScreen(timer: TimerController, launch: (suspend () -> Unit) -> Unit, onOpenDay: (LocalDate) -> Unit) {
+    val context = LocalContext.current
     val snapshot by timer.snapshots.collectAsStateWithLifecycle(initialValue = null)
     val snap = snapshot ?: return
     var weekEpochDay by rememberSaveable { mutableStateOf(WorkCalculator.weekStart(timer.today()).toEpochDay()) }
@@ -106,6 +109,10 @@ fun HistoryScreen(timer: TimerController, onOpenDay: (LocalDate) -> Unit) {
                     Text(formatSigned(total), color = balanceColor(total), fontWeight = FontWeight.Bold)
                 }
             }
+        }
+
+        OutlinedButton(onClick = { launch { shareCsv(context, timer) } }, modifier = Modifier.fillMaxWidth()) {
+            Text("Exportar CSV (todo el histórico)")
         }
     }
 }

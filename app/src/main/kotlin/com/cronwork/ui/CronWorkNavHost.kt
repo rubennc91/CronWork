@@ -84,7 +84,7 @@ fun CronWorkNavHost(
     ) { padding ->
         NavHost(nav, startDestination = "today", modifier = Modifier.padding(padding)) {
             composable("today") { TodayScreen(timer, launch, editOpenSessionRequest, onEditOpenSessionHandled) }
-            composable("history") { HistoryScreen(timer) { date -> nav.navigate("day/${date.toEpochDay()}") } }
+            composable("history") { HistoryScreen(timer, launch) { date -> nav.navigate("day/${date.toEpochDay()}") } }
             composable("day/{epochDay}") { e ->
                 val day = e.arguments?.getString("epochDay")?.toLongOrNull() ?: return@composable
                 DayDetailScreen(LocalDate.ofEpochDay(day), timer, launch)
