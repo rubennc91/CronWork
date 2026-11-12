@@ -43,13 +43,46 @@ object WorkCalculator {
         zone: ZoneId,
     ): DaySummary {
         val daySessions = sessions.filter { it.start.atZone(zone).toLocalDate() == date }
+        val adjustmentSeconds = adjustments.filter { it.date == date }.sumOf { it.minutes * 60L }
+        return summarize(date, daySessions, adjustmentSeconds, special, settings, now, zone)
+    }
+
+    /** Sessions and adjustment totals grouped by day once, so long histories stay fast. */
+    private class DayIndex(sessions: List<Session>, adjustments: List<Adjustment>, zone: ZoneId) {
+        val sessionsByDay: Map<LocalDate, List<Session>> = sessions.groupBy { it.start.atZone(zone).toLocalDate() }
+        val adjustmentSecondsByDay: Map<LocalDate, Long> =
+            adjustments.groupBy { it.date }.mapValues { (_, l) -> l.sumOf { it.minutes * 60L } }
+
+        fun firstDay(): LocalDate? = (sessionsByDay.keys + adjustmentSecondsByDay.keys).minOrNull()
+    }
+
+    private fun summarize(
+        date: LocalDate,
+        index: DayIndex,
+        special: SpecialDay?,
+        settings: Settings,
+        now: Instant,
+        zone: ZoneId,
+    ) = summarize(
+        date, index.sessionsByDay[date].orEmpty(), index.adjustmentSecondsByDay[date] ?: 0L,
+        special, settings, now, zone,
+    )
+
+    private fun summarize(
+        date: LocalDate,
+        daySessions: List<Session>,
+        adjustmentSeconds: Long,
+        special: SpecialDay?,
+        settings: Settings,
+        now: Instant,
+        zone: ZoneId,
+    ): DaySummary {
         val sessionSeconds = daySessions.sumOf { s ->
             Duration.between(s.start, s.end ?: now).seconds.coerceAtLeast(0)
         }
         val crossesMidnight = daySessions.any { s ->
             (s.end ?: now).atZone(zone).toLocalDate() != date
         }
-        val adjustmentSeconds = adjustments.filter { it.date == date }.sumOf { it.minutes * 60L }
         // Not clamped at 0: a linear total keeps the app, notification and widget countdowns in step.
         var worked = sessionSeconds + adjustmentSeconds
         val pauseApplied = settings.pauseEnabled && worked >= settings.pauseThresholdMinutes * 60L
@@ -78,9 +111,10 @@ object WorkCalculator {
     ): WeekSummary {
         val today = now.atZone(zone).toLocalDate()
         val specialsByDate = specials.associateBy { it.date }
+        val index = DayIndex(sessions, adjustments, zone)
         val days = (0L until 7L).map { offset ->
             val date = weekStart.plusDays(offset)
-            daySummary(date, sessions, adjustments, specialsByDate[date], settings, now, zone)
+            summarize(date, index, specialsByDate[date], settings, now, zone)
         }
         return WeekSummary(
             weekStart = weekStart,
@@ -101,13 +135,13 @@ object WorkCalculator {
         zone: ZoneId,
     ): Long {
         val today = now.atZone(zone).toLocalDate()
-        val first = (sessions.map { it.start.atZone(zone).toLocalDate() } + adjustments.map { it.date })
-            .minOrNull() ?: return 0
+        val index = DayIndex(sessions, adjustments, zone)
+        val first = index.firstDay() ?: return 0
         val specialsByDate = specials.associateBy { it.date }
         var total = 0L
         var date = first
         while (!date.isAfter(today)) {
-            total += daySummary(date, sessions, adjustments, specialsByDate[date], settings, now, zone).balanceSeconds
+            total += summarize(date, index, specialsByDate[date], settings, now, zone).balanceSeconds
             date = date.plusDays(1)
         }
         return total
