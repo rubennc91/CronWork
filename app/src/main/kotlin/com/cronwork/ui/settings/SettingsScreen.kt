@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.cronwork.container
 import com.cronwork.core.Settings
@@ -48,6 +49,12 @@ fun SettingsScreen(timer: TimerController, launch: (suspend () -> Unit) -> Unit,
     val snapshot by timer.snapshots.collectAsStateWithLifecycle(initialValue = null)
     val s = snapshot?.settings ?: return
     val context = LocalContext.current
+    var canExact by remember { mutableStateOf(context.container.alarms.canExact()) }
+    // Re-check when coming back from the system settings page.
+    LifecycleResumeEffect(Unit) {
+        canExact = context.container.alarms.canExact()
+        onPauseOrDispose { }
+    }
     fun update(t: (Settings) -> Settings) = launch { timer.updateSettings(t) }
 
     Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -86,7 +93,7 @@ fun SettingsScreen(timer: TimerController, launch: (suspend () -> Unit) -> Unit,
         NumberField("Avisar si lleva estas horas seguidas (0 = no)", s.forgotReminderHours) { h ->
             update { it.copy(forgotReminderHours = h) }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !context.container.alarms.canExact()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !canExact) {
             Text(
                 "Las alarmas exactas no están permitidas: los avisos pueden llegar con unos minutos de retraso.",
                 style = MaterialTheme.typography.bodySmall,

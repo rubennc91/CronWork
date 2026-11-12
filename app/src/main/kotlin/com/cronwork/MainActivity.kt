@@ -33,7 +33,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        readIntent(intent)
+        // On recreation (e.g. rotation) the launch intent is the same one: don't reopen the dialog.
+        if (savedInstanceState == null) readIntent(intent)
         askNotificationPermission()
         val timer = container.timer
         setContent {
@@ -63,6 +64,7 @@ class MainActivity : ComponentActivity() {
 
     private fun readIntent(intent: Intent?) {
         if (intent?.getBooleanExtra(Actions.EXTRA_EDIT_OPEN_SESSION, false) == true) {
+            intent.removeExtra(Actions.EXTRA_EDIT_OPEN_SESSION)
             editOpenSession = true
             container.notifier.cancelForgot()
         }
