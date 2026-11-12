@@ -29,6 +29,7 @@ fun EditError.message(): String = when (this) {
     EditError.EndBeforeStart -> "El fin es anterior al inicio"
     EditError.Overlaps -> "Se solapa con otro tramo"
     EditError.InFuture -> "No puede terminar en el futuro"
+    EditError.AlreadyStopped -> "Este tramo ya se paró mientras editabas. Cierra y vuelve a abrirlo."
 }
 
 /**
