@@ -10,11 +10,13 @@ import com.cronwork.data.WorkRepository
 import com.cronwork.core.Adjustment
 import com.cronwork.core.SpecialDay
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.Clock
@@ -68,7 +70,7 @@ class TimerController(
                 delay(1000)
             }
         }
-    }
+    }.flowOn(Dispatchers.Default) // keep the per-second recompute off the UI thread
 
     fun compute(snap: WorkSnapshot, at: Instant = now()): TimerState =
         TimerState.compute(snap.sessions, snap.adjustments, snap.specials, snap.settings, at, zone())

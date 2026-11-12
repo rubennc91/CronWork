@@ -47,4 +47,16 @@ class SessionRulesTest {
         assertFalse(SessionRules.canStart(listOf(Session(1, at(MON, 9), null))))
         assertTrue(SessionRules.canStart(listOf(Session(1, at(MON, 9), at(MON, 10)))))
     }
+
+    @Test fun `keeping a session open is rejected if it was stopped meanwhile`() {
+        // Dialog opened while running; meanwhile stopped from the notification at 12:00.
+        val stored = Session(1, at(MON, 9), at(MON, 12))
+        val stillOpen = Session(1, at(MON, 9), null)
+        assertEquals(EditError.AlreadyStopped, SessionRules.validate(stillOpen, listOf(stored), now))
+    }
+
+    @Test fun `editing the start of a running session is allowed`() {
+        val stored = Session(1, at(MON, 9), null)
+        assertNull(SessionRules.validate(Session(1, at(MON, 8, 30), null), listOf(stored), now))
+    }
 }
